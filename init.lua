@@ -485,6 +485,16 @@ require('lazy').setup({
 
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
+    opts = {
+      servers = {
+        rust_analyzer = {},
+      },
+      setup = {
+        rust_analyzer = function()
+          return true 
+        end,
+      },
+    },
     dependencies = {
       -- Automatically install LSPs and related tools to stdpath for Neovim
       { 'williamboman/mason.nvim', config = true }, -- NOTE: Must be loaded before dependants
@@ -643,8 +653,9 @@ require('lazy').setup({
         clangd = {},
         gopls = {},
         pyright = {},
-        rust_analyzer = {},
+        -- rust_analyzer = {},
         bashls = {},
+        tsserver = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -669,8 +680,6 @@ require('lazy').setup({
           },
         },
       }
-
-      -- Ensure the servers and tools above are installed
       --  To check the current status of installed tools and/or manually install
       --  other tools, you can run
       --    :Mason
@@ -698,6 +707,18 @@ require('lazy').setup({
           end,
         },
       }
+
+      --local lspconfig = require('lspconfig')
+      --lspconfig.rust_analyzer.setup {
+      --  -- Server-specific settings. See `:help lspconfig-setup`
+      --  settings = {
+      --    ['rust-analyzer'] = {},
+      --  },
+      --}
+      --
+
+
+
     end,
   },
 
@@ -728,6 +749,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        typescript = { 'prettier' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
