@@ -180,6 +180,63 @@ vim.opt.isfname:append '@-@'
 vim.opt.updatetime = 50
 
 vim.opt.colorcolumn = '80'
+vim.g.rustfmt_autosave = 1
+
+vim.o.clipboard = 'unnamedplus'
+
+local function paste()
+  return {
+    vim.fn.split(vim.fn.getreg '', '\n'),
+    vim.fn.getregtype '',
+  }
+end
+
+vim.g.clipboard = {
+  name = 'OSC 52',
+  copy = {
+    ['+'] = require('vim.ui.clipboard.osc52').copy '+',
+    ['*'] = require('vim.ui.clipboard.osc52').copy '*',
+  },
+  paste = {
+    ['+'] = paste,
+    ['*'] = paste,
+  },
+}
+
+--vim.g.clipboard = {
+--  name = 'OSC 52',
+--  copy = {
+--    ['+'] = require('vim.ui.clipboard.osc52').copy '+',
+--    ['*'] = require('vim.ui.clipboard.osc52').copy '*',
+--  },
+--  paste = {
+--    ['+'] = require('vim.ui.clipboard.osc52').paste '+',
+--    ['*'] = require('vim.ui.clipboard.osc52').paste '*',
+--  },
+--}
+--
+--if os.getenv 'SSH_CLIENT' ~= nil or os.getenv 'SSH_TTY' ~= nil then
+--  local function my_paste(_)
+--    return function(_)
+--      local content = vim.fn.getreg '"'
+--      return vim.split(content, '\n')
+--    end
+--  end
+--
+--  vim.g.clipboard = {
+--    name = 'OSC 52',
+--    copy = {
+--      ['+'] = require('vim.ui.clipboard.osc52').copy '+',
+--      ['*'] = require('vim.ui.clipboard.osc52').copy '*',
+--    },
+--    paste = {
+--      ['+'] = my_paste '+',
+--      ['*'] = my_paste '*',
+--    },
+--  }
+--end
+--
+--vim.opt.clipboard = 'unnamedplus'
 -- KSSESSIO DONE
 --
 
@@ -236,7 +293,7 @@ vim.keymap.set('x', '<leader>p', [["_dP]])
 
 -- next greatest remap ever : asbjornHaland
 vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]])
-vim.keymap.set('n', '<leader>Y', [["+Y]])
+vim.keymap.set({ 'n', 'v' }, '<leader>Y', [["+Y]])
 
 -- This is going to get me cancelled
 vim.keymap.set('i', '<C-c>', '<Esc>')
@@ -262,6 +319,15 @@ vim.keymap.set('n', '<leader>ee', 'oif err != nil {<CR>}<Esc>Oreturn err<Esc>')
 vim.keymap.set('n', '<leader><leader>', function()
   vim.cmd 'so'
 end)
+
+vim.api.nvim_create_autocmd({ 'BufWritePre' }, {
+  pattern = { '*' },
+  callback = function(ev)
+    save_cursor = vim.fn.getpos '.'
+    vim.cmd [[%s/\s\+$//e]]
+    vim.fn.setpos('.', save_cursor)
+  end,
+})
 
 -- KSSESSIO DONE
 
@@ -434,6 +500,30 @@ require('lazy').setup({
         --   },
         -- },
         -- pickers = {}
+        defaults = {
+          vimgrep_arguments = {
+            'rg',
+            '--color=never',
+            '--no-heading',
+            '--with-filename',
+            '--line-number',
+            '--column',
+            '--smart-case',
+            '--hidden',
+            '--no-ignore',
+            '-L',
+          },
+        },
+        pickers = {
+          find_files = {
+            find_command = { 'fd', '--type', 'f', '--hidden', '--follow', '--no-ignore', '--exclude', '.git' },
+          },
+          live_grep = {
+            additional_args = function(opts)
+              return { '--hidden', '--no-ignore', '-L' }
+            end,
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -441,6 +531,55 @@ require('lazy').setup({
         },
       }
 
+      -- Multi Grep
+
+      local live_multigrep = function(opts)
+        opts = opts or {}
+        local pickers = require 'telescope.pickers'
+        local finders = require 'telescope.finders'
+        local make_entry = require 'telescope.make_entry'
+        local conf = require('telescope.config').values
+
+        opts.cwd = opts.cwd or vim.uv.cwd()
+
+        local finder = finders.new_async_job {
+          command_generator = function(prompt)
+            if not prompt or prompt == '' then
+              return nil
+            end
+
+            local pieces = vim.split(prompt, '  ')
+            local args = { 'rg', '-L' }
+            if pieces[1] then
+              table.insert(args, '-e')
+              table.insert(args, pieces[1])
+            end
+
+            if pieces[2] then
+              table.insert(args, '-g')
+              table.insert(args, pieces[2])
+            end
+
+            ---@diagnostic disable-next-line: deprecated
+            return vim.tbl_flatten {
+              args,
+              { '--color=never', '--no-heading', '--with-filename', '--line-number', '--column', '--smart-case' },
+            }
+          end,
+          entry_maker = make_entry.gen_from_vimgrep(opts),
+          cwd = opts.cwd,
+        }
+
+        pickers
+          .new(opts, {
+            debounce = 100,
+            prompt_title = 'Multi Grep',
+            finder = finder,
+            previewer = conf.grep_previewer(opts),
+            sorter = require('telescope.sorters').empty(),
+          })
+          :find()
+      end
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
@@ -452,7 +591,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+      vim.keymap.set('n', '<leader>sg', live_multigrep, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
