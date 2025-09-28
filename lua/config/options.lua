@@ -70,7 +70,7 @@ vim.opt.wrap = false
 
 vim.opt.swapfile = false
 vim.opt.backup = false
-vim.opt.undodir = os.getenv 'HOME' .. '/.vim/undodir'
+vim.opt.undodir = (os.getenv 'HOME' or os.getenv 'USERPROFILE') .. '/.vim/undodir'
 vim.opt.undofile = true
 
 --vim.opt.hlsearch = false
@@ -91,11 +91,11 @@ vim.g.rustfmt_autosave = 1
 vim.g.clipboard = {
   name = 'OSC 52',
   copy = {
-    ['+'] = require('vim.ui.clipboard.osc52').copy('+'),
-    ['*'] = require('vim.ui.clipboard.osc52').copy('*'),
+    ['+'] = require('vim.ui.clipboard.osc52').copy '+',
+    ['*'] = require('vim.ui.clipboard.osc52').copy '*',
   },
   paste = {
-    ['+'] = require('vim.ui.clipboard.osc52').paste('+'),
-    ['*'] = require('vim.ui.clipboard.osc52').paste('*'),
+    ['+'] = require('vim.ui.clipboard.osc52').paste '+',
+    ['*'] = require('vim.ui.clipboard.osc52').paste '*',
   },
 }
