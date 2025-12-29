@@ -101,6 +101,8 @@ map("n", "<leader>u", vim.cmd.UndotreeToggle)
 map("n", "\\", ":Neotree reveal<CR>", { desc = "NeoTree reveal", silent = true })
 
 -- ===== BUFFER NAVIGATION =====
+map("n", "<S-p>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
+map("n", "<S-n>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 map("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
 map("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 map("n", "<leader>bd", "<cmd>bdelete<cr>", { desc = "Delete Buffer" })
@@ -129,7 +131,7 @@ M.setup_lsp_keymaps = function(event)
 
 	-- Inlay hints toggle (if supported)
 	local client = vim.lsp.get_client_by_id(event.data.client_id)
-	if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+	if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
 		map("<leader>th", function()
 			vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
 		end, "[T]oggle Inlay [H]ints")
