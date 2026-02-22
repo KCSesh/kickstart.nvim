@@ -56,6 +56,7 @@ map("i", "<C-c>", "<Esc>")
 map("n", "Q", "<nop>")
 
 -- ===== QUICKFIX/LOCATION LISTS =====
+map("n", "<leader>co", "<cmd>copen<CR>", { desc = "Open [C]quickfix list" })
 map("n", "<C-k>", "<cmd>cnext<CR>zz")
 map("n", "<C-j>", "<cmd>cprev<CR>zz")
 map("n", "<leader>k", "<cmd>lnext<CR>zz")
@@ -101,10 +102,8 @@ map("n", "<leader>u", vim.cmd.UndotreeToggle)
 map("n", "\\", ":Neotree reveal<CR>", { desc = "NeoTree reveal", silent = true })
 
 -- ===== BUFFER NAVIGATION =====
-map("n", "<S-p>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
-map("n", "<S-n>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
-map("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
-map("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
+map("n", "<S-Tab>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
+map("n", "<Tab>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 map("n", "<leader>bd", "<cmd>bdelete<cr>", { desc = "Delete Buffer" })
 
 -- ===== LAZYGIT =====

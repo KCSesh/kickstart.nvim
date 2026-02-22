@@ -50,3 +50,19 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end
   end,
 })
+
+-- Set compiler per filetype for :make integration
+vim.api.nvim_create_autocmd('FileType', {
+  group = vim.api.nvim_create_augroup('filetype-compiler', { clear = true }),
+  callback = function(event)
+    local compilers = {
+      go = 'go',
+      c = 'gcc',
+      cpp = 'gcc',
+    }
+    local compiler = compilers[event.match]
+    if compiler then
+      vim.cmd.compiler(compiler)
+    end
+  end,
+})
